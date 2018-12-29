@@ -21,6 +21,8 @@ public class HttpServer {
 				Socket client = ss.accept();
 
 				processClient(client);
+				
+				client.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -31,32 +33,27 @@ public class HttpServer {
 		try (BufferedInputStream br = new BufferedInputStream(client.getInputStream());
 				PrintStream ps = new PrintStream(client.getOutputStream(), true)) {
 
-			String response = read(ps, br);
-			write(ps, response);
+			read(ps, br);
 		}
 	}
 
 	private String read(PrintStream ps, BufferedInputStream br) throws IOException {
 		if (br != null) {
 			StringBuilder request = new StringBuilder();
-			
+
 			byte[] buffer = new byte[1024];
 			int bytesRead = 0;
-			
+
 			while ((bytesRead = br.read(buffer, 0, 1024)) > 0) {
 				request.append(new String(buffer, 0, bytesRead));
-				
+
 				if (bytesRead < 1024) {
 					break;
 				}
 			}
-			
-			return HttpRequest.parseRequest(ps,request.toString());
+
+			return HttpRequest.parseRequest(ps, request.toString());
 		}
 		return "Error";
-	}
-
-	private void write(PrintStream ps, String response) {
-
 	}
 }
