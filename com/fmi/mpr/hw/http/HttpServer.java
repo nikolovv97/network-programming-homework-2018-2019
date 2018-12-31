@@ -48,33 +48,33 @@ public class HttpServer {
 				int bytesRead = 0;
 
 				while ((bytesRead = br.read(buffer, 0, 1024)) > 0) {
-					request.append(new String(buffer, 0, bytesRead));
+					request.append(new String(buffer, 0, bytesRead,"ISO_8859_1"));
 
 					if (bytesRead < 1024) {
 						break;
 					}
 				}
 				
-				boolean response = httpService.parseRequest(ps, request.toString());
+				String response = httpService.parseRequest(ps, request.toString());
 				
 				write(ps, response);
 			}
 		}
 	}
 
-	private void write(PrintStream ps, boolean response) {
+	private void write(PrintStream ps, String response) {
 
-		if (ps != null && !response) {
+		if (ps != null && response == null) {
 			ps.println("HTTP/1.0 200 OK");
 			ps.println();
 			ps.println("<!DOCTYPE html>\n" + 
 					"<html>\n" + 
 					"<body>\n" + 
 					
-					"<form method=\"POST\" action=\"/\">" +
-						" <input type=\"file\">" +
-						"<input type=\"submit\" value=\"Upload\">" +
-					"</form>" +
+				"<form method=\"post\" enctype=\"multipart/form-data\">"+
+			        "<input type=\"file\" name=\"fileContent\"><br>"+
+			        "<input type=\"submit\" value=\"Upload File\">"+
+			        "</form>"+
 						
 					"<form method=\"GET\" >" +
 					"<input type=\"text\" name=\"filename\">" +
