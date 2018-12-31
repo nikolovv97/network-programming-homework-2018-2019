@@ -52,15 +52,26 @@ public class HttpRequestService {
 				return "Error";
 			}
 		} else {
-			processPOST(ps, lines);
+			try{
+				processPOST(ps, lines);
+				
+				createResponse(ps, "200 OK", "text/plain");
+				
+				byte[] postMessage = "File uploaded successfully!".getBytes();
+				
+				ps.write(postMessage, 0, postMessage.length);				
 
-			createResponse(ps, "200 OK", "text/plain");
+				return "success";
+			}
+			catch(Exception e){
+				createResponse(ps, "404 Not Found", "text/plain");
+				byte[] errorMessage = "Something went wrong.File couldnt be uploaded.Try again.".getBytes();
 
-			byte[] postMessage = "File uploaded successfully!".getBytes();
+				ps.write(errorMessage, 0, errorMessage.length);
 
-			ps.write(postMessage, 0, postMessage.length);
+				return "Error";
+			}
 
-			return "success";
 		}
 	}
 
@@ -105,12 +116,11 @@ public class HttpRequestService {
 		fis.close();
 	}
 
-	private void processPOST(PrintStream ps, String[] lines) throws IOException {
+	private void processPOST(PrintStream ps, String[] lines) throws RuntimeException, IOException {
 		uploadFile(ps, lines);
 	}
 
-	private void uploadFile(PrintStream ps, String[] lines) throws IOException {
-		StringBuffer x = new StringBuffer();
+	private void uploadFile(PrintStream ps, String[] lines) throws RuntimeException, IOException {
 		int lineFilestart = 0;
 		String filename="";
 		for (int i = 0; i < lines.length; ++i) {
@@ -124,16 +134,17 @@ public class HttpRequestService {
 				break;
 			}
 		}
-
-		for (int i = lineFilestart; i < lines.length - 1; ++i) {
-			x.append(lines[i]);
-			x.append("\n");
+		if(filename.equals("")){
+			throw new RuntimeException("FAIL");
 		}
-
 		FileOutputStream fout = new FileOutputStream(new File(filename));
 
-		byte[] arr = x.toString().getBytes("ISO_8859_1");
-		fout.write(arr, 0, arr.length);
+		for (int i = lineFilestart; i < lines.length - 1; ++i) {
+			String current = new String(lines[i]+"\n");
+			byte[] arr = current.getBytes("ISO_8859_1");
+			fout.write(arr, 0, arr.length);
+		}
+		
 		fout.close();
 	}
 
